@@ -22,6 +22,7 @@ from __future__ import unicode_literals
 
 import validators
 from requests.compat import urljoin
+
 from sickbeard import logger, tvcache
 from sickrage.helper.common import convert_size, try_int
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
@@ -45,7 +46,7 @@ class BitCannonProvider(TorrentProvider):
 
         url = "http://localhost:3000/"
         if self.custom_url:
-            if not validators.url(self.custom_url, require_tld=False):
+            if not validators.url(self.custom_url):
                 logger.log("Invalid custom url set, please check your settings", logger.WARNING)
                 return results
             url = self.custom_url

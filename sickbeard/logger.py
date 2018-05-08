@@ -36,15 +36,17 @@ import threading
 import traceback
 from logging import NullHandler
 
-import sickbeard
 import six
-from github import InputFileContent, RateLimitExceededException, TwoFactorException
+from github import InputFileContent
+from github.GithubException import RateLimitExceededException, TwoFactorException
+# noinspection PyUnresolvedReferences
+from six.moves.urllib.parse import quote
+
+import sickbeard
 from sickbeard import classes
 from sickrage.helper.common import dateTimeFormat
 from sickrage.helper.encoding import ek, ss
 from sickrage.helper.exceptions import ex
-# noinspection PyUnresolvedReferences
-from six.moves.urllib.parse import quote
 
 # pylint: disable=line-too-long
 
@@ -322,11 +324,11 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
                     title_error = 'UNKNOWN'
 
                 gist = None
-                regex = r'^({0})\s+([A-Z]+)\s+[A-Za-z0-9\-\[\] :]+::\s(?:\[[\w]{7}\]).*$'.format(re.escape(cur_error.time))
+                regex = r'^(?P<time>{time})\s+(?P<level>[A-Z]+)\s+[A-Za-z0-9\-\[\] :]+::.*$'.format(time=re.escape(cur_error.time))
                 for i, data in enumerate(__log_data):
                     match = re.match(regex, data)
                     if match:
-                        level = match.group(1)
+                        level = match.group('level')
                         if LOGGING_LEVELS[level] == ERROR:
                             paste_data = ''.join(__log_data[i:i + 50])
                             if paste_data:

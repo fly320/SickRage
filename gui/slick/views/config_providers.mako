@@ -1,19 +1,19 @@
 <%inherit file="/layouts/config.mako"/>
 <%!
     import sickbeard
+    from sickbeard.filters import hide
     from sickbeard.helpers import anon_url
     from sickrage.providers.GenericProvider import GenericProvider
 %>
 
 <%block name="scripts">
-    <script type="text/javascript" src="${srRoot}/js/configProviders.js?${sbPID}"></script>
+    <script type="text/javascript" src="${static_url('js/configProviders.js')}"></script>
     <script type="text/javascript">
         $(document).ready(function() {
             $('#config-components').tabs();
             % if sickbeard.USE_NZBS:
-                var show_nzb_providers = ${("false", "true")[bool(sickbeard.USE_NZBS)]};
                 % for curNewznabProvider in sickbeard.newznabProviderList:
-                    $(this).addProvider('${curNewznabProvider.get_id()}', '${curNewznabProvider.name}', '${curNewznabProvider.url}', '${curNewznabProvider.key}', '${curNewznabProvider.catIDs}', ${int(curNewznabProvider.default)}, show_nzb_providers);
+                    $(this).addProvider('${curNewznabProvider.get_id()}', '${curNewznabProvider.name}', '${curNewznabProvider.url}', '${curNewznabProvider.key}', '${curNewznabProvider.catIDs}', ${int(curNewznabProvider.default)});
                 % endfor
             % endif
             % if sickbeard.USE_TORRENTS:
@@ -50,8 +50,8 @@
                         <p>${_('At least one provider is required but two are recommended.')}</p>
 
                         % if not sickbeard.USE_NZBS or not sickbeard.USE_TORRENTS:
-                            <blockquote style="margin: 20px 0;">NZB/${_('Torrent providers can be toggled in ')}
-                                <b><a href="${srRoot}/config/search">Search Settings</a></b></blockquote>
+                            <blockquote style="margin: 20px 0;">NZB/${_('Torrent and NZB providers can be toggled in ')}
+                                <b><a href="/config/search">Search Settings</a></b></blockquote>
                         % else:
                             <br>
                         % endif
@@ -78,15 +78,15 @@
 
                                 curName = curProvider.get_id()
                                 if hasattr(curProvider, 'custom_url'):
-                                        curURL = curProvider.custom_url or curProvider.url
+                                    curURL = curProvider.custom_url or curProvider.url
                                 else:
-                                        curURL = curProvider.url
+                                    curURL = curProvider.url
                             %>
                                 <li class="ui-state-default ${('nzb-provider', 'torrent-provider')[bool(curProvider.provider_type == GenericProvider.TORRENT)]}" id="${curName}">
                                     <input type="checkbox" id="enable_${curName}" class="provider_enabler" ${('', 'checked="checked"')[curProvider.is_enabled() is True]}/>
                                     <a href="${anon_url(curURL)}" class="imgLink" rel="noreferrer"
                                        onclick="window.open(this.href, '_blank'); return false;">
-                                        <img src="${srRoot}/images/providers/${curProvider.image_name()}"
+                                        <img src="${static_url('images/providers/' + curProvider.image_name())}"
                                             alt="${curProvider.name}" title="${curProvider.name}" width="16"
                                             height="16" style="vertical-align:middle;"/>
                                     </a>
@@ -148,7 +148,7 @@
 
 
                         <!-- start div for editing providers //-->
-                        % for curNewznabProvider in [curProvider for curProvider in sickbeard.newznabProviderList]:
+                        % for curNewznabProvider in sickbeard.newznabProviderList:
                             <div class="providerDiv" id="${curNewznabProvider.get_id()}Div">
                                 % if curNewznabProvider.default and curNewznabProvider.needs_auth:
 
@@ -429,10 +429,11 @@
                                             <label class="component-title">${_('Password')}</label>
                                         </div>
                                         <div class="col-lg-9 col-md-8 col-sm-7 col-xs-12 component-desc">
-                                            <input type="password" name="${curTorrentProvider.get_id()}_password"
-                                                   id="${curTorrentProvider.get_id()}_password"
-                                                   value="${curTorrentProvider.password | h}" class="form-control input-sm input350"
-                                                   autocomplete="no" autocapitalize="off"/>
+                                            <input
+                                                type="password" name="${curTorrentProvider.get_id()}_password"
+                                                id="${curTorrentProvider.get_id()}_password" value="${curTorrentProvider.password|hide}"
+                                                class="form-control input-sm input350" autocomplete="no" autocapitalize="off"
+                                            />
                                         </div>
                                     </div>
                                 % endif
@@ -443,10 +444,10 @@
                                             <label class="component-title">${_('Passkey')}</label>
                                         </div>
                                         <div class="col-lg-9 col-md-8 col-sm-7 col-xs-12 component-desc">
-                                            <input type="text" name="${curTorrentProvider.get_id()}_passkey"
-                                                   id="${curTorrentProvider.get_id()}_passkey"
-                                                   value="${curTorrentProvider.passkey}" class="form-control input-sm input350"
-                                                   autocapitalize="off"/>
+                                            <input
+                                                type="text" name="${curTorrentProvider.get_id()}_passkey" id="${curTorrentProvider.get_id()}_passkey"
+                                                value="${curTorrentProvider.passkey|hide}" class="form-control input-sm input350" autocapitalize="off"
+                                            />
                                         </div>
                                     </div>
                                 % endif
@@ -485,10 +486,11 @@
                                             <label class="component-title">${_('Pin')}</label>
                                         </div>
                                         <div class="col-lg-9 col-md-8 col-sm-7 col-xs-12 component-desc">
-                                            <input type="password" name="${curTorrentProvider.get_id()}_pin"
-                                                   id="${curTorrentProvider.get_id()}_pin" value="${curTorrentProvider.pin}"
-                                                   class="form-control input-sm input100" autocomplete="no"
-                                                   autocapitalize="off"/>
+                                            <input
+                                                type="password" name="${curTorrentProvider.get_id()}_pin"
+                                                id="${curTorrentProvider.get_id()}_pin" value="${curTorrentProvider.pin|hide}"
+                                                class="form-control input-sm input100" autocomplete="no" autocapitalize="off"
+                                            />
                                         </div>
                                     </div>
                                 % endif
@@ -782,8 +784,9 @@
                                     <div class="col-lg-9 col-md-8 col-sm-7 col-xs-12 component-desc">
                                         <div class="row">
                                             <div class="col-md-12">
-                                                <input type="password" id="newznab_key"
-                                                       class="form-control input-sm input350" autocapitalize="off"/>
+                                                <input
+                                                    type="password" id="newznab_key" class="form-control input-sm input350" autocapitalize="off"
+                                                />
                                             </div>
                                         </div>
                                         <div class="row">
